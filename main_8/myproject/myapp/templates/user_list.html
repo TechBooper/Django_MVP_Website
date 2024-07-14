@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %}Followed Users{% endblock %}
+
+{% block content %}
+<h1>Followed Users</h1>
+<ul>
+    {% for user in followed_users %}
+        <li>
+            {{ user.username }}
+            <form method="post" action="{% url 'myapp:unfollow_user' user.id %}" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit">Unfollow</button>
+            </form>
+        </li>
+    {% endfor %}
+</ul>
+{% endblock %}

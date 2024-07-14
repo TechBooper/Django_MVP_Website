@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}User Dashboard{% endblock %}
+
+{% block content %}
+<h1>Welcome to Your Dashboard</h1>
+<h2>Your Tickets</h2>
+{% for ticket in tickets %}
+    {% include 'ticket_snippet.html' %}
+{% endfor %}
+
+<h2>Your Reviews</h2>
+{% for review in reviews %}
+    {% include 'review_snippet.html' %}
+{% endfor %}
+{% endblock %}
