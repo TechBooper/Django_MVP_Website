@@ -34,7 +34,3 @@ This is a simple Django-based MVP (Minimum Viable Product) website made for LITR
 ## Usage
 
 Visit `http://127.0.0.1:8000/` in your web browser to test the website's functionalities.
-
-## Contributing
-
-Feel free to open issues or submit pull requests.
