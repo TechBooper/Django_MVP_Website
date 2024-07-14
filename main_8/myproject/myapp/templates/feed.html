@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block title %}Feed{% endblock %}
+
+{% block content %}
+<h1>Your Feed</h1>
+<form method="post" action="{% url 'myapp:follow_user' %}">
+    {% csrf_token %}
+    <input type="text" name="username" placeholder="Enter username to follow">
+    <button type="submit">Follow</button>
+</form>
+<hr>
+{% for item in combined %}
+    {% if item.title %}
+        <div>
+            <h2>{{ item.title }}</h2>
+            <p>{{ item.description }}</p>
+            <small>Posted by {{ item.user.username }} on {{ item.time_created }}</small>
+            <a href="{% url 'myapp:create_review' item.id %}">Add Review</a>
+        </div>
+    {% else %}
+        <div>
+            <h2>{{ item.headline }}</h2>
+            <p>{{ item.body }}</p>
+            <p>Rating: {{ item.rating }}</p>
+            <small>Review by {{ item.user.username }} on {{ item.time_created }} for ticket "{{ item.ticket.title }}"</small>
+        </div>
+    {% endif %}
+    <hr>
+{% endfor %}
+{% endblock %}
