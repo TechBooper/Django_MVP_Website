@@ -4,13 +4,58 @@
 
 {% block content %}
 <h1>Welcome to Your Dashboard</h1>
+
+<h2>Your Followers</h2>
+<ul>
+    {% for follower in followers %}
+        <li>{{ follower.user.username }}</li>
+    {% endfor %}
+</ul>
+
+<h2>Your Following</h2>
+<ul>
+    {% for follow in following %}
+        <li>{{ follow.followed_user.username }}</li>
+    {% endfor %}
+</ul>
+
 <h2>Your Tickets</h2>
-{% for ticket in tickets %}
-    {% include 'ticket_snippet.html' %}
-{% endfor %}
+{% if tickets %}
+    {% for ticket in tickets %}
+        <div class="card">
+            <h3>{{ ticket.title }}</h3>
+            <p>{{ ticket.description }}</p>
+            {% if ticket.image %}
+                <img src="{{ ticket.image.url }}" alt="{{ ticket.title }}">
+            {% endif %}
+            <p><strong>{{ ticket.user.username }}</strong> - {{ ticket.time_created }}</p>
+            <a href="{% url 'myapp:edit_ticket' ticket.id %}">Edit</a>
+            <form method="post" action="{% url 'myapp:delete_ticket' ticket.id %}">
+                {% csrf_token %}
+                <button type="submit">Delete</button>
+            </form>
+        </div>
+    {% endfor %}
+{% else %}
+    <p>You have not created any tickets.</p>
+{% endif %}
 
 <h2>Your Reviews</h2>
-{% for review in reviews %}
-    {% include 'review_snippet.html' %}
-{% endfor %}
+{% if reviews %}
+    {% for review in reviews %}
+        <div class="card">
+            <h3>{{ review.headline }}</h3>
+            <p>{{ review.body }}</p>
+            <p><strong>{{ review.user.username }}</strong> - {{ review.time_created }}</p>
+            <p>Rating: {{ review.rating }}</p>
+            <a href="{% url 'myapp:edit_review' review.id %}">Edit</a>
+            <form method="post" action="{% url 'myapp:delete_review' review.id %}">
+                {% csrf_token %}
+                <button type="submit">Delete</button>
+            </form>
+        </div>
+    {% endfor %}
+{% else %}
+    <p>You have not created any reviews.</p>
+{% endif %}
 {% endblock %}

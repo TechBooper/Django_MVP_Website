@@ -4,14 +4,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="A Book Review App to share and discover reviews.">
-    <meta name="keywords" content="book, review, share, discover">
-    <meta name="author" content="Book Review">
-    <meta property="og:title" content="{% block og_title %}Book Review App{% endblock %}">
-    <meta property="og:description" content="{% block og_description %}A platform to share and discover book reviews.{% endblock %}">
-    <meta property="og:image" content="{% block og_image %}{% static 'images/og_image.jpg' %}{% endblock %}">
-    <meta property="og:url" content="{% block og_url %}{% url 'myapp:base' %}{% endblock %}">
-    <meta name="twitter:card" content="summary_large_image">
     <title>{% block title %}Book Review App{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
@@ -24,14 +16,12 @@
                     <li><a href="{% url 'myapp:feed' %}">Home</a></li>
                     <li><a href="{% url 'myapp:create_ticket' %}">Create Ticket</a></li>
                     <li><a href="{% url 'myapp:create_ticket_review' %}">Create Ticket & Review</a></li>
-                    <li><a href="{% url 'myapp:follow_user' %}">Follow User</a></li>
-                    <li><a href="{% url 'myapp:followed_users' %}">Followed Users</a></li>
+                    <li><a href="{% url 'myapp:manage_follows' %}">Manage Follows</a></li>
+                    <li><a href="{% url 'myapp:request_review' %}">Request a Review</a></li>
                     <li>
                         <form method="post" action="{% url 'myapp:logout' %}" style="display: inline;">
                             {% csrf_token %}
-                            <button type="submit" style="background: none; border: none; padding: 0; font: inherit; color: inherit; cursor: pointer;">
-                                Logout
-                            </button>
+                            <button type="submit">Logout</button>
                         </form>
                     </li>
                 {% else %}
@@ -44,9 +34,8 @@
     <main>
         {% block content %}{% endblock %}
     </main>
-    <footer>
+    <!-- <footer>
         <p>&copy; 2024 Book Review App. All rights reserved.</p>
-    </footer>
-    <script src="{% static 'js/main.js' %}"></script>
+    </footer> -->
 </body>
 </html>

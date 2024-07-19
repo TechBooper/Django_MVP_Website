@@ -5,6 +5,8 @@ from django.contrib.auth.forms import UserCreationForm
 
 
 class UserRegisterForm(UserCreationForm):
+    """Form for user registration."""
+
     email = forms.EmailField(
         required=True, widget=forms.EmailInput(attrs={"class": "form-control"})
     )
@@ -20,6 +22,8 @@ class UserRegisterForm(UserCreationForm):
 
 
 class TicketForm(forms.ModelForm):
+    """Form for creating and editing tickets."""
+
     class Meta:
         model = Ticket
         fields = ["title", "description"]
@@ -30,6 +34,8 @@ class TicketForm(forms.ModelForm):
 
 
 class ReviewForm(forms.ModelForm):
+    """Form for creating and editing reviews."""
+
     class Meta:
         model = Review
         fields = ["rating", "headline", "body"]
@@ -40,7 +46,24 @@ class ReviewForm(forms.ModelForm):
         }
 
 
+class ReviewRequestForm(forms.Form):
+    """Form for requesting a review from another user."""
+
+    requested_user = forms.CharField(
+        max_length=150,
+        widget=forms.TextInput(
+            attrs={"placeholder": "Enter username", "class": "form-control"}
+        ),
+    )
+    ticket = forms.ModelChoiceField(
+        queryset=Ticket.objects.all(),
+        widget=forms.Select(attrs={"class": "form-control"}),
+    )
+
+
 class FollowUserForm(forms.Form):
+    """Form for following a user."""
+
     username = forms.CharField(
         max_length=170,
         widget=forms.TextInput(
@@ -49,7 +72,22 @@ class FollowUserForm(forms.Form):
     )
 
 
+class FollowForm(forms.Form):
+    """Form for managing follow and unfollow actions."""
+
+    username = forms.CharField(
+        max_length=150, widget=forms.TextInput(attrs={"placeholder": "Username"})
+    )
+    action = forms.ChoiceField(
+        choices=[("follow", "Follow"), ("unfollow", "Unfollow")],
+        widget=forms.HiddenInput(),
+        initial="follow",
+    )
+
+
 class CombinedTicketReviewForm(forms.Form):
+    """Form for creating a ticket and a review together."""
+
     title = forms.CharField(
         max_length=200, widget=forms.TextInput(attrs={"class": "form-control"})
     )

@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block title %}Request Review{% endblock %}
+
+{% block content %}
+<h1>Request a Review</h1>
+<form method="post">
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="id_requested_user">Enter Username to Request Review From:</label>
+        {{ form.requested_user }}
+    </div>
+    <div class="form-group">
+        <label for="id_ticket">Select Ticket:</label>
+        {{ form.ticket }}
+    </div>
+    <button type="submit">Submit</button>
+</form>
+{% endblock %}

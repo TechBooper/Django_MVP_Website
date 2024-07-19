@@ -3,10 +3,43 @@
 {% block title %}Create Review{% endblock %}
 
 {% block content %}
-    <h1>Review for "{{ post.title }}"</h1>
-    <form method="post" action="{% url 'myapp:create_review' post.id %}">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Create Review</button>
-    </form>
+<h1>Create a Review</h1>
+
+<div class="ticket-details">
+    <h2>You are posting in response to</h2>
+    <div class="ticket">
+        <p><strong>{{ ticket.user.username }}</strong> requested a review</p>
+        <p><strong>{{ ticket.title }}</strong> - {{ ticket.author }}</p>
+        <p>{{ ticket.description }}</p>
+        {% if ticket.image %}
+            <img src="{{ ticket.image.url }}" alt="{{ ticket.title }}">
+        {% endif %}
+        <p>{{ ticket.time_created }}</p>
+    </div>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    <fieldset>
+        <legend>Review</legend>
+        <div class="form-group">
+            <label for="id_headline">Title</label>
+            {{ form.headline }}
+        </div>
+        <div class="form-group">
+            <label for="id_rating">Rating</label>
+            <div class="star-rating">
+                {% for i in "543210" %}
+                    <input type="radio" id="star{{ i }}" name="rating" value="{{ i }}">
+                    <label for="star{{ i }}" title="{{ i }} stars">{{ i }} stars</label>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="id_body">Comment</label>
+            {{ form.body }}
+        </div>
+        <button type="submit">Submit</button>
+    </fieldset>
+</form>
 {% endblock %}

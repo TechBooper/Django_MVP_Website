@@ -1,12 +1,13 @@
 from django.urls import path, include
 from . import views
 from django.contrib.auth import views as auth_views
-from .views import dashboard
+from .views import dashboard_view, request_review, dashboard, manage_follows
 
 app_name = "myapp"
 
 
 urlpatterns = [
+    path("dashboard/", dashboard_view, name="dashboard"),
     path("dashboard/", dashboard, name="dashboard"),
     path("feed/", views.feed, name="feed"),
     path("base/", views.index, name="base"),
@@ -22,6 +23,8 @@ urlpatterns = [
     ),
     path("follow_user/", views.follow_user, name="follow_user"),
     path("unfollow_user/<int:user_id>/", views.unfollow_user, name="unfollow_user"),
+    path("request_review/", request_review, name="request_review"),
+    path("manage_follows/", manage_follows, name="manage_follows"),
     path("followed_users/", views.followed_users, name="followed_users"),
     path("add_ticket/", views.add_ticket, name="add_ticket"),
     path("edit_ticket/<int:ticket_id>/", views.edit_ticket, name="edit_ticket"),
