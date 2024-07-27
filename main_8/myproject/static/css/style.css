@@ -35,6 +35,31 @@ nav ul li a, nav ul li button {
     cursor: pointer;
 }
 
+nav ul li button {
+    background: none; /* Ensure no background */
+    border: none; /* Ensure no border */
+    color: white; /* Text color same as other links */
+    padding: 0; /* Remove padding */
+    margin: 0; /* Remove margin */
+    font: inherit; /* Inherit font styles */
+    cursor: pointer; /* Pointer cursor */
+}
+
+nav ul li form button {
+    background-color: #4CAF50; /* Ensure the button background is green */
+    border: 1px solid #4CAF50; /* Border to match background */
+    border-radius: 5px; /* Add border radius for rounded corners */
+    padding: 10px; /* Add padding for better appearance */
+    color: white; /* Ensure text color is white */
+    cursor: pointer; /* Pointer cursor */
+    transition: background-color 0.3s;
+}
+
+nav ul li form button:hover {
+    background-color: #45a049; /* Change background color on hover */
+    border-color: #45a049; /* Change border color on hover */
+}
+
 nav ul li button:hover, nav ul li a:hover {
     text-decoration: underline;
 }
@@ -192,3 +217,4 @@ footer {
     bottom: 0;
     width: 100%;
 }
+

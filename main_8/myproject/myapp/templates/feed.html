@@ -10,6 +10,9 @@
         <div>
             <h2>{{ item.title }}</h2>
             <p>{{ item.description }}</p>
+            {% if item.image %}
+                <img src="{{ item.image.url }}" alt="{{ item.title }}" style="max-width: 100%; height: auto;">
+            {% endif %}
             <small>Posted by {{ item.user.username }} on {{ item.time_created }}</small>
             <a href="{% url 'myapp:create_review' item.id %}">Add Review</a>
         </div>

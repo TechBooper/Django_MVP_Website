@@ -5,12 +5,21 @@ from django.db.models import UniqueConstraint
 
 
 class Ticket(models.Model):
-    """Model for tickets."""
+    """
+    Model representing a ticket.
+
+    Attributes:
+        title (str): The title of the ticket.
+        description (str): The detailed description of the ticket.
+        user (User): The user who created the ticket.
+        image (ImageField): An optional image associated with the ticket.
+        time_created (datetime): The date and time when the ticket was created.
+    """
 
     title = models.CharField(max_length=128)
     description = models.TextField(max_length=2048, blank=True)
     user = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    image = models.ImageField(null=True, blank=True)
+    image = models.ImageField(upload_to="tickets/", null=True, blank=True)
     time_created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -18,7 +27,17 @@ class Ticket(models.Model):
 
 
 class Review(models.Model):
-    """Model for reviews."""
+    """
+    Model representing a review for a ticket.
+
+    Attributes:
+        ticket (Ticket): The ticket that the review is associated with.
+        rating (int): The rating given by the user, ranging from 0 to 5.
+        headline (str): The headline of the review.
+        body (str): The detailed body of the review.
+        user (User): The user who wrote the review.
+        time_created (datetime): The date and time when the review was created.
+    """
 
     ticket = models.ForeignKey(to=Ticket, on_delete=models.CASCADE)
     rating = models.PositiveSmallIntegerField(
@@ -34,7 +53,15 @@ class Review(models.Model):
 
 
 class ReviewRequest(models.Model):
-    """Model for review requests."""
+    """
+    Model representing a request for a review of a ticket.
+
+    Attributes:
+        requester (User): The user who made the review request.
+        requested_user (User): The user who is requested to write the review.
+        ticket (Ticket): The ticket for which the review is requested.
+        time_created (datetime): The date and time when the review request was created.
+    """
 
     requester = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,
@@ -46,7 +73,7 @@ class ReviewRequest(models.Model):
         on_delete=models.CASCADE,
         related_name="requests_received",
     )
-    ticket = models.ForeignKey(to="Ticket", on_delete=models.CASCADE)
+    ticket = models.ForeignKey(to=Ticket, on_delete=models.CASCADE)
     time_created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -54,7 +81,13 @@ class ReviewRequest(models.Model):
 
 
 class UserFollows(models.Model):
-    """Model for user follows."""
+    """
+    Model representing a user's following relationship with another user.
+
+    Attributes:
+        user (User): The user who is following another user.
+        followed_user (User): The user who is being followed.
+    """
 
     user = models.ForeignKey(
         to=settings.AUTH_USER_MODEL, related_name="following", on_delete=models.CASCADE

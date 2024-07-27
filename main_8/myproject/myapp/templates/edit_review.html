@@ -6,7 +6,15 @@
 <h1>Edit Review</h1>
 <form method="post" action="{% url 'myapp:edit_review' review.id %}">
     {% csrf_token %}
-    {{ form.as_p }}
+    <div class="star-rating">
+        {% for choice in form.rating %}
+            {{ choice }}
+        {% endfor %}
+    </div>
+    {{ form.headline.label_tag }}
+    {{ form.headline }}
+    {{ form.body.label_tag }}
+    {{ form.body }}
     <button type="submit">Save</button>
 </form>
 {% endblock %}

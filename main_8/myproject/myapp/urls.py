@@ -1,7 +1,11 @@
 from django.urls import path, include
 from . import views
+from django.conf import settings
+from django.conf.urls.static import static
+from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from .views import dashboard_view, request_review, dashboard, manage_follows
+
 
 app_name = "myapp"
 
@@ -34,3 +38,6 @@ urlpatterns = [
     path("delete_review/<int:review_id>/", views.delete_review, name="delete_review"),
     path("accounts/", include("django.contrib.auth.urls")),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

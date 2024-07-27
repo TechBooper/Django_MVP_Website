@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth import login, logout
 from django.contrib.auth.forms import UserCreationForm
@@ -7,7 +8,6 @@ from django.contrib import messages
 from .forms import (
     TicketForm,
     ReviewForm,
-    CombinedTicketReviewForm,
     ReviewRequestForm,
     FollowForm,
 )
@@ -19,7 +19,15 @@ from django.http import HttpResponseRedirect
 
 
 def dashboard(request):
-    """Display user's tickets and reviews on the dashboard."""
+    """
+    Display all tickets and reviews created by the logged-in user on their dashboard.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+
+    Returns:
+        HttpResponse: Rendered dashboard page with user's tickets and reviews.
+    """
     tickets = Ticket.objects.filter(user=request.user)
     reviews = Review.objects.filter(user=request.user)
     context = {
@@ -31,7 +39,15 @@ def dashboard(request):
 
 @login_required
 def dashboard_view(request):
-    """Display user's dashboard with followers, following, tickets, and reviews."""
+    """
+    Display the dashboard with user's followers, following, tickets, and reviews.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+
+    Returns:
+        HttpResponse: Rendered dashboard page with user's followers, following, tickets, and reviews.
+    """
     user = request.user
     followers = user.followers.all()
     following = user.following.all()
@@ -51,23 +67,41 @@ def dashboard_view(request):
 
 @login_required
 def feed(request):
-    """Display feed of tickets and reviews from followed users."""
+    """
+    Display a feed of tickets and reviews from users the current user follows.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+
+    Returns:
+        HttpResponse: Rendered feed page with combined tickets and reviews sorted by creation time.
+    """
     following_users = [follow.followed_user for follow in request.user.following.all()]
     tickets = Ticket.objects.filter(user__in=following_users).order_by("-time_created")
     reviews = Review.objects.filter(user__in=following_users).order_by("-time_created")
     combined = sorted(
         list(tickets) + list(reviews), key=lambda x: x.time_created, reverse=True
     )
-    return render(request, "feed.html", {"combined": combined})
+    return render(
+        request, "feed.html", {"combined": combined, "media_url": settings.MEDIA_URL}
+    )
 
 
 def signup(request):
-    """Handle user signup using UserCreationForm."""
+    """
+    Handle user signup process using Django's UserCreationForm.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+
+    Returns:
+        HttpResponse: Rendered signup page with user creation form, or redirects to feed upon successful signup.
+    """
     if request.method == "POST":
         form = UserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            login(request, user)
+            login(request, user)  # Log the user in immediately after signup
             return redirect("myapp:feed")
     else:
         form = UserCreationForm()
@@ -76,12 +110,20 @@ def signup(request):
 
 @login_required
 def create_ticket(request):
-    """Handle creating a new ticket."""
+    """
+    Handle the creation of a new ticket by the logged-in user.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+
+    Returns:
+        HttpResponse: Rendered create ticket page with ticket form, or redirects to feed upon successful creation.
+    """
     if request.method == "POST":
         form = TicketForm(request.POST)
         if form.is_valid():
             ticket = form.save(commit=False)
-            ticket.user = request.user
+            ticket.user = request.user  # Set the user to the currently logged-in user
             ticket.save()
             messages.success(request, "Ticket created successfully.")
             return redirect("myapp:feed")
@@ -92,51 +134,75 @@ def create_ticket(request):
 
 @login_required
 def create_review(request, ticket_id):
-    """Handle creating a new review for a specific ticket."""
+    """
+    Handle the creation of a new review for a specific ticket.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+        ticket_id (int): The ID of the ticket to review.
+
+    Returns:
+        HttpResponse: Rendered create review page with review form, or redirects to feed upon successful creation.
+    """
     ticket = get_object_or_404(Ticket, pk=ticket_id)
     if request.method == "POST":
         form = ReviewForm(request.POST)
         if form.is_valid():
             review = form.save(commit=False)
-            review.ticket = ticket
+            review.ticket = ticket  # Link the review to the specified ticket
             review.user = request.user
             review.save()
             return redirect("myapp:feed")
     else:
         form = ReviewForm()
-    return render(request, "create_review.html", {"form": form, "post": ticket})
+    return render(request, "create_review.html", {"form": form, "ticket": ticket})
 
 
 @login_required
 def create_ticket_review(request):
-    """Handle creating a new ticket and review together."""
+    """
+    Handle the creation of a new ticket and review together by the logged-in user.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+
+    Returns:
+        HttpResponse: Rendered create ticket and review page with combined form, or redirects to feed upon successful creation.
+    """
     if request.method == "POST":
-        form = CombinedTicketReviewForm(request.POST)
-        if form.is_valid():
-            ticket = Ticket(
-                title=form.cleaned_data["title"],
-                description=form.cleaned_data["description"],
-                user=request.user,
-            )
+        ticket_form = TicketForm(request.POST, request.FILES)
+        review_form = ReviewForm(request.POST)
+        if ticket_form.is_valid() and review_form.is_valid():
+            ticket = ticket_form.save(commit=False)
+            ticket.user = request.user
             ticket.save()
-            review = Review(
-                rating=form.cleaned_data["rating"],
-                headline=form.cleaned_data["headline"],
-                body=form.cleaned_data["body"],
-                ticket=ticket,
-                user=request.user,
-            )
+            review = review_form.save(commit=False)
+            review.ticket = ticket
+            review.user = request.user
             review.save()
             messages.success(request, "Ticket and Review created successfully.")
             return redirect("myapp:feed")
     else:
-        form = CombinedTicketReviewForm()
-    return render(request, "create_ticket_review.html", {"form": form})
+        ticket_form = TicketForm()
+        review_form = ReviewForm()
+    return render(
+        request,
+        "create_ticket_review.html",
+        {"ticket_form": ticket_form, "review_form": review_form},
+    )
 
 
 @login_required
 def follow_user(request):
-    """Handle following a user."""
+    """
+    Handle the process of following another user.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+
+    Returns:
+        HttpResponse: Rendered follow user page or error message if the user does not exist.
+    """
     if request.method == "POST":
         username = request.POST.get("username")
         try:
@@ -152,7 +218,15 @@ def follow_user(request):
 
 @login_required
 def manage_follows(request):
-    """Manage the users the current user is following and their followers."""
+    """
+    Manage the users the logged-in user is following and their followers.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+
+    Returns:
+        HttpResponse: Rendered manage follows page with followers and following lists, and follow/unfollow form.
+    """
     user = request.user
     followers = user.followers.all()
     following = user.following.all()
@@ -182,19 +256,43 @@ def manage_follows(request):
 
 @login_required
 def followed_users(request):
-    """Display the users the current user is following."""
+    """
+    Display the list of users the current user is following.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+
+    Returns:
+        HttpResponse: Rendered followed users page with the list of followed users.
+    """
     follows = UserFollows.objects.filter(user=request.user)
     return render(request, "followed_users.html", {"follows": follows})
 
 
 def index(request):
-    """Render the base template."""
+    """
+    Render the base template for the application.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+
+    Returns:
+        HttpResponse: Rendered base template.
+    """
     return render(request, "base.html")
 
 
 @login_required
 def add_ticket(request):
-    """Handle adding a new ticket."""
+    """
+    Handle the creation of a new ticket using a form.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+
+    Returns:
+        HttpResponse: Rendered add ticket page with ticket form, or success message upon successful creation.
+    """
     return handle_create_form(
         request, TicketForm, "add_ticket.html", "Ticket created successfully."
     )
@@ -202,7 +300,16 @@ def add_ticket(request):
 
 @login_required
 def edit_ticket(request, ticket_id):
-    """Handle editing an existing ticket."""
+    """
+    Handle the editing of an existing ticket.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+        ticket_id (int): The ID of the ticket to edit.
+
+    Returns:
+        HttpResponse: Rendered edit ticket page with ticket form, or redirects to dashboard upon successful edit.
+    """
     ticket = get_object_or_404(Ticket, id=ticket_id)
     if request.method == "POST":
         form = TicketForm(request.POST, instance=ticket)
@@ -216,9 +323,17 @@ def edit_ticket(request, ticket_id):
 
 @login_required
 @require_POST
-@permission_required("myapp.delete_ticket", raise_exception=True)
 def delete_ticket(request, ticket_id):
-    """Handle deleting an existing ticket."""
+    """
+    Handle the deletion of an existing ticket by the user who created it.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+        ticket_id (int): The ID of the ticket to delete.
+
+    Returns:
+        HttpResponse: Redirects to dashboard upon successful deletion, or rendered delete ticket page.
+    """
     ticket = get_object_or_404(Ticket, id=ticket_id, user=request.user)
     if request.method == "POST":
         ticket.delete()
@@ -228,7 +343,15 @@ def delete_ticket(request, ticket_id):
 
 @login_required
 def add_review(request):
-    """Handle adding a new review."""
+    """
+    Handle the creation of a new review using a form.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+
+    Returns:
+        HttpResponse: Rendered add review page with review form, or success message upon successful creation.
+    """
     return handle_create_form(
         request, ReviewForm, "add_review.html", "Review created successfully."
     )
@@ -236,7 +359,15 @@ def add_review(request):
 
 @login_required
 def request_review(request):
-    """Handle requesting a review from another user for a specific ticket."""
+    """
+    Handle requesting a review from another user for a specific ticket.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+
+    Returns:
+        HttpResponse: Rendered request review page with review request form, or redirects to dashboard upon successful request.
+    """
     if request.method == "POST":
         form = ReviewRequestForm(request.POST)
         if form.is_valid():
@@ -256,7 +387,16 @@ def request_review(request):
 
 
 def edit_review(request, review_id):
-    """Handle editing an existing review."""
+    """
+    Handle the editing of an existing review.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+        review_id (int): The ID of the review to edit.
+
+    Returns:
+        HttpResponse: Rendered edit review page with review form, or redirects to dashboard upon successful edit.
+    """
     review = get_object_or_404(Review, id=review_id)
     if request.method == "POST":
         form = ReviewForm(request.POST, instance=review)
@@ -271,7 +411,16 @@ def edit_review(request, review_id):
 @login_required
 @permission_required("myapp.delete_review", raise_exception=True)
 def delete_review(request, review_id):
-    """Handle deleting an existing review."""
+    """
+    Handle the deletion of an existing review by the user who created it.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+        review_id (int): The ID of the review to delete.
+
+    Returns:
+        HttpResponse: Redirects to dashboard upon successful deletion, or rendered delete review page.
+    """
     review = get_object_or_404(Review, id=review_id, user=request.user)
     if request.method == "POST":
         review.delete()
@@ -280,7 +429,18 @@ def delete_review(request, review_id):
 
 
 def handle_create_form(request, form_class, template_name, success_message):
-    """Handle form submission for creating a new instance of a given model."""
+    """
+    Handle form submission for creating a new instance of a given model.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+        form_class (ModelForm): The form class to use for creating the instance.
+        template_name (str): The template to render.
+        success_message (str): The success message to display upon successful creation.
+
+    Returns:
+        HttpResponse: Rendered template with form, or redirects to feed upon successful creation.
+    """
     if not request.user.has_perm("can_create_" + form_class._meta.model_name):
         messages.error(request, "You do not have permission to create.")
         return redirect("myapp:feed")
@@ -300,7 +460,20 @@ def handle_create_form(request, form_class, template_name, success_message):
 def handle_edit_form(
     request, instance_id, model_class, form_class, template_name, success_message
 ):
-    """Handle form submission for editing an existing instance of a given model."""
+    """
+    Handle form submission for editing an existing instance of a given model.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+        instance_id (int): The ID of the instance to edit.
+        model_class (Model): The model class of the instance.
+        form_class (ModelForm): The form class to use for editing the instance.
+        template_name (str): The template to render.
+        success_message (str): The success message to display upon successful edit.
+
+    Returns:
+        HttpResponse: Rendered template with form, or redirects to feed upon successful edit.
+    """
     instance = get_object_or_404(model_class, pk=instance_id, user=request.user)
     if not request.user.has_perm("can_edit_" + model_class._meta.model_name):
         messages.error(request, "You do not have permission to edit.")
@@ -317,7 +490,18 @@ def handle_edit_form(
 
 
 def handle_delete(request, instance_id, model_class, success_message):
-    """Handle deleting an existing instance of a given model."""
+    """
+    Handle the deletion of an existing instance of a given model.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+        instance_id (int): The ID of the instance to delete.
+        model_class (Model): The model class of the instance.
+        success_message (str): The success message to display upon successful deletion.
+
+    Returns:
+        HttpResponse: Redirects to feed upon successful deletion, or rendered base template.
+    """
     instance = get_object_or_404(model_class, pk=instance_id, user=request.user)
     if not request.user.has_perm("can_delete_" + model_class._meta.model_name):
         messages.error(request, "You do not have permission to delete.")
@@ -332,7 +516,16 @@ def handle_delete(request, instance_id, model_class, success_message):
 @login_required
 @require_POST
 def unfollow_user(request, user_id):
-    """Handle unfollowing a user."""
+    """
+    Handle the process of unfollowing a user.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+        user_id (int): The ID of the user to unfollow.
+
+    Returns:
+        HttpResponse: Redirects to feed upon successful unfollowing, or error message if not following the user.
+    """
     user_to_unfollow = get_object_or_404(User, id=user_id)
     if not UserFollows.objects.filter(
         user=request.user, followed_user=user_to_unfollow
@@ -347,6 +540,14 @@ def unfollow_user(request, user_id):
 
 
 def custom_logout(request):
-    """Handle user logout."""
+    """
+    Handle the logout process for a user.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+
+    Returns:
+        HttpResponse: Redirects to login page upon successful logout.
+    """
     logout(request)
     return redirect("login")
