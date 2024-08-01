@@ -1,6 +1,6 @@
 # Django MVP Website
 
-This is a simple Django-based MVP (Minimum Viable Product) website made for LITRevu, designed to create Tickets and Reviews of books online.
+This is a simple Django-based MVP (Minimum Viable Product) website made for LITRevu, designed to create Tickets and Reviews of books online with other users.
 
 ## Features
 
