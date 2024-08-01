@@ -322,7 +322,6 @@ def edit_ticket(request, ticket_id):
 
 
 @login_required
-@require_POST
 def delete_ticket(request, ticket_id):
     """
     Handle the deletion of an existing ticket by the user who created it.
@@ -335,6 +334,7 @@ def delete_ticket(request, ticket_id):
         HttpResponse: Redirects to dashboard upon successful deletion, or rendered delete ticket page.
     """
     ticket = get_object_or_404(Ticket, id=ticket_id, user=request.user)
+    
     if request.method == "POST":
         ticket.delete()
         return redirect(reverse("myapp:dashboard"))
