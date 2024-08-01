@@ -110,7 +110,17 @@ class UserFollows(models.Model):
     def __str__(self):
         return f"{self.user.username} follows {self.followed_user.username}"
 
+
 class UserBlock(models.Model):
+    """
+    Model representing a user's block relationship with another user.
+
+    Attributes:
+        blocker (User): The user who is blocking another user.
+        blocked (User): The user who is being blocked.
+        blocked_at (datetime): The date and time when the user was blocked.
+    """
+
     blocker = models.ForeignKey(User, related_name='blocking', on_delete=models.CASCADE)
     blocked = models.ForeignKey(User, related_name='blocked', on_delete=models.CASCADE)
     blocked_at = models.DateTimeField(auto_now_add=True)

@@ -126,7 +126,7 @@ def create_ticket(request):
         form = TicketForm(request.POST)
         if form.is_valid():
             ticket = form.save(commit=False)
-            ticket.user = request.user  # Set the user to the currently logged-in user
+            ticket.user = request.user  
             ticket.save()
             messages.success(request, "Ticket created successfully.")
             return redirect("myapp:feed")
@@ -152,7 +152,7 @@ def create_review(request, ticket_id):
         form = ReviewForm(request.POST)
         if form.is_valid():
             review = form.save(commit=False)
-            review.ticket = ticket  # Link the review to the specified ticket
+            review.ticket = ticket
             review.user = request.user
             review.save()
             return redirect("myapp:feed")
