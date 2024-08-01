@@ -1,3 +1,5 @@
+from itertools import chain
+from django.db.models import CharField, Value
 from django.shortcuts import render, redirect, get_object_or_404
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
@@ -11,7 +13,7 @@ from .forms import (
     ReviewRequestForm,
     FollowForm,
 )
-from .models import Ticket, Review, UserFollows, ReviewRequest
+from .models import Ticket, Review, UserFollows, ReviewRequest, UserBlock
 from django.core.exceptions import ObjectDoesNotExist
 from django.urls import reverse
 from django.views.decorators.http import require_POST
@@ -68,7 +70,7 @@ def dashboard_view(request):
 @login_required
 def feed(request):
     """
-    Display a feed of tickets and reviews from users the current user follows.
+    Display a feed of tickets and reviews from users the current user follows, excluding blocked users' content.
 
     Args:
         request (HttpRequest): The HTTP request object.
@@ -77,15 +79,16 @@ def feed(request):
         HttpResponse: Rendered feed page with combined tickets and reviews sorted by creation time.
     """
     following_users = [follow.followed_user for follow in request.user.following.all()]
-    tickets = Ticket.objects.filter(user__in=following_users).order_by("-time_created")
-    reviews = Review.objects.filter(user__in=following_users).order_by("-time_created")
+    blocked_users = [block.blocked for block in UserBlock.objects.filter(blocker=request.user)]
+
+    tickets = Ticket.objects.filter(user__in=following_users).exclude(user__in=blocked_users).annotate(content_type=Value('TICKET', CharField()))
+    reviews = Review.objects.filter(user__in=following_users).exclude(user__in=blocked_users).annotate(content_type=Value('REVIEW', CharField()))
+
     combined = sorted(
         list(tickets) + list(reviews), key=lambda x: x.time_created, reverse=True
     )
-    return render(
-        request, "feed.html", {"combined": combined, "media_url": settings.MEDIA_URL}
-    )
 
+    return render(request, 'feed.html', context={'posts': combined, 'media_url': settings.MEDIA_URL})
 
 def signup(request):
     """
@@ -489,6 +492,27 @@ def handle_edit_form(
     return render(request, template_name, {"form": form, "instance": instance})
 
 
+@login_required
+def confirm_delete_review(request, review_id):
+    """
+    Display a confirmation page for deleting a review and handle the deletion.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+        review_id (int): The ID of the review to delete.
+
+    Returns:
+        HttpResponse: Redirects to the feed upon successful deletion, or renders the confirmation page.
+    """
+    review = get_object_or_404(Review, id=review_id, user=request.user)
+
+    if request.method == "POST":
+        review.delete()
+        messages.success(request, "Review deleted successfully.")
+        return redirect('myapp:feed')
+
+    return render(request, "confirm_delete_review.html", {"review": review})
+
 def handle_delete(request, instance_id, model_class, success_message):
     """
     Handle the deletion of an existing instance of a given model.
@@ -512,6 +536,84 @@ def handle_delete(request, instance_id, model_class, success_message):
         return redirect("myapp:feed")
     return render(request, "base.html", {"instance": instance})
 
+@login_required
+def block_user(request, user_id):
+    """
+    Block a user by adding them to the block list of the current user.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+        user_id (int): The ID of the user to block.
+
+    Returns:
+        HttpResponse: Redirects back to the previous page or a specified URL.
+    """
+    user_to_block = get_object_or_404(User, id=user_id)
+
+    if user_to_block == request.user:
+        messages.error(request, "You cannot block yourself.")
+        return redirect('myapp:dashboard')
+
+    block, created = UserBlock.objects.get_or_create(blocker=request.user, blocked=user_to_block)
+
+    if created:
+        messages.success(request, f"You have blocked {user_to_block.username}.")
+    else:
+        messages.info(request, f"{user_to_block.username} is already blocked.")
+
+    return redirect('myapp:dashboard')
+
+@login_required
+def manage_blocks(request):
+    """
+    Display a list of users blocked by the current user and provide options to block or unblock them.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+
+    Returns:
+        HttpResponse: Rendered manage blocks page with a list of blocked users and a block form.
+    """
+    blocked_users = UserBlock.objects.filter(blocker=request.user).select_related('blocked')
+    
+    if request.method == "POST":
+        if "block_user" in request.POST:
+            username = request.POST.get("username")
+            try:
+                user_to_block = User.objects.get(username=username)
+                if user_to_block == request.user:
+                    messages.error(request, "You cannot block yourself.")
+                else:
+                    UserBlock.objects.get_or_create(blocker=request.user, blocked=user_to_block)
+                    messages.success(request, f"You have blocked {user_to_block.username}.")
+            except User.DoesNotExist:
+                messages.error(request, "User not found.")
+        
+        elif "unblock_user" in request.POST:
+            unblock_user_id = request.POST.get("unblock_user_id")
+            try:
+                user_to_unblock = User.objects.get(pk=unblock_user_id)
+                UserBlock.objects.filter(blocker=request.user, blocked=user_to_unblock).delete()
+                messages.success(request, f"You have unblocked {user_to_unblock.username}.")
+            except User.DoesNotExist:
+                messages.error(request, "User not found.")
+        
+        return redirect('myapp:manage_blocks')
+
+    return render(request, "manage_blocks.html", {"blocked_users": blocked_users})
+
+def is_blocked(blocker, blocked):
+    """
+    Check if a user has blocked another user.
+
+    Args:
+        blocker (User): The user who might have blocked another user.
+        blocked (User): The user who might be blocked.
+
+    Returns:
+        bool: True if blocked, False otherwise.
+    """
+    return UserBlock.objects.filter(blocker=blocker, blocked=blocked).exists()
 
 @login_required
 @require_POST

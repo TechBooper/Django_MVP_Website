@@ -5,8 +5,8 @@
 {% block content %}
 <h1>Your Feed</h1>
 <hr>
-{% for item in combined %}
-    {% if item.title %}
+{% for item in posts %}
+    {% if item.content_type == 'TICKET' %}
         <div>
             <h2>{{ item.title }}</h2>
             <p>{{ item.description }}</p>
@@ -16,7 +16,7 @@
             <small>Posted by {{ item.user.username }} on {{ item.time_created }}</small>
             <a href="{% url 'myapp:create_review' item.id %}">Add Review</a>
         </div>
-    {% else %}
+    {% elif item.content_type == 'REVIEW' %}
         <div>
             <h2>{{ item.headline }}</h2>
             <p>{{ item.body }}</p>

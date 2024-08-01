@@ -2,6 +2,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.conf import settings
 from django.db import models
 from django.db.models import UniqueConstraint
+from django.contrib.auth.models import User
 
 
 class Ticket(models.Model):
@@ -108,3 +109,16 @@ class UserFollows(models.Model):
 
     def __str__(self):
         return f"{self.user.username} follows {self.followed_user.username}"
+
+class UserBlock(models.Model):
+    blocker = models.ForeignKey(User, related_name='blocking', on_delete=models.CASCADE)
+    blocked = models.ForeignKey(User, related_name='blocked', on_delete=models.CASCADE)
+    blocked_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('blocker', 'blocked')
+        verbose_name = 'User Block'
+        verbose_name_plural = 'User Blocks'
+
+    def __str__(self):
+        return f"{self.blocker} blocked {self.blocked}"

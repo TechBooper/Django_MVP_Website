@@ -1,3 +1,4 @@
+<!-- base.html -->
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
@@ -18,6 +19,7 @@
                     <li><a href="{% url 'myapp:create_ticket_review' %}">Create Ticket & Review</a></li>
                     <li><a href="{% url 'myapp:manage_follows' %}">Manage Follows</a></li>
                     <li><a href="{% url 'myapp:request_review' %}">Request a Review</a></li>
+                    <li><a href="{% url 'myapp:manage_blocks' %}">Manage Blocked Users</a></li>
                     <li>
                         <form method="post" action="{% url 'myapp:logout' %}" style="display: inline;">
                             {% csrf_token %}

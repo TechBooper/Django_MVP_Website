@@ -1,0 +1,34 @@
+<!-- manage_blocks.html -->
+{% extends 'base.html' %}
+
+{% block title %}Manage Blocked Users{% endblock %}
+
+{% block content %}
+<h1>Manage Blocked Users</h1>
+
+<!-- Form to block a new user -->
+<form method="post">
+    {% csrf_token %}
+    <label for="username">Choose a user to block:</label>
+    <input type="text" id="username" name="username" required>
+    <button type="submit" name="block_user" class="btn btn-primary">Block</button>
+</form>
+
+<hr>
+{% if blocked_users %}
+    <ul>
+        {% for block in blocked_users %}
+            <li>
+                {{ block.blocked.username }}
+                <form method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="unblock_user_id" value="{{ block.blocked.id }}">
+                    <button type="submit" name="unblock_user" class="btn btn-warning">Unblock</button>
+                </form>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>You have not blocked any users.</p>
+{% endif %}
+{% endblock %}

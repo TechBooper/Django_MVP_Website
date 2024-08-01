@@ -30,7 +30,6 @@
             {% endif %}
             <p><strong>{{ ticket.user.username }}</strong> - {{ ticket.time_created }}</p>
             <a href="{% url 'myapp:edit_ticket' ticket.id %}">Edit</a>
-            <!-- Redirect to confirmation page -->
             <a href="{% url 'myapp:confirm_delete_ticket' ticket.id %}" class="btn btn-danger">Delete</a>
         </div>
     {% endfor %}
@@ -47,10 +46,7 @@
             <p><strong>{{ review.user.username }}</strong> - {{ review.time_created }}</p>
             <p>Rating: {{ review.rating }}</p>
             <a href="{% url 'myapp:edit_review' review.id %}">Edit</a>
-            <form method="post" action="{% url 'myapp:delete_review' review.id %}">
-                {% csrf_token %}
-                <button type="submit">Delete</button>
-            </form>
+            <a href="{% url 'myapp:confirm_delete_review' review.id %}" class="btn btn-danger">Delete</a>
         </div>
     {% endfor %}
 {% else %}

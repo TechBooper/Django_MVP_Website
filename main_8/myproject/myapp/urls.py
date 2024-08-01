@@ -6,9 +6,7 @@ from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from .views import dashboard_view, request_review, dashboard, manage_follows
 
-
 app_name = "myapp"
-
 
 urlpatterns = [
     path("dashboard/", dashboard_view, name="dashboard"),
@@ -33,10 +31,13 @@ urlpatterns = [
     path("add_ticket/", views.add_ticket, name="add_ticket"),
     path("edit_ticket/<int:ticket_id>/", views.edit_ticket, name="edit_ticket"),
     path("delete_ticket/<int:ticket_id>/", views.delete_ticket, name="delete_ticket"),
-    path("confirm_delete_ticket/<int:ticket_id>/", views.delete_ticket, name="confirm_delete_ticket"),
+    path("confirm_delete_ticket/<int:ticket_id>/", views.delete_ticket, name="confirm_delete_ticket"),  # Added this line
     path("add_review/", views.add_review, name="add_review"),
     path("edit_review/<int:review_id>/", views.edit_review, name="edit_review"),
     path("delete_review/<int:review_id>/", views.delete_review, name="delete_review"),
+    path('confirm_delete_review/<int:review_id>/', views.confirm_delete_review, name='confirm_delete_review'),
+    path('block_user/<int:user_id>/', views.block_user, name='block_user'),
+    path('manage_blocks/', views.manage_blocks, name='manage_blocks'),
     path("accounts/", include("django.contrib.auth.urls")),
 ]
 
