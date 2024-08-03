@@ -121,14 +121,14 @@ class UserBlock(models.Model):
         blocked_at (datetime): The date and time when the user was blocked.
     """
 
-    blocker = models.ForeignKey(User, related_name='blocking', on_delete=models.CASCADE)
-    blocked = models.ForeignKey(User, related_name='blocked', on_delete=models.CASCADE)
+    blocker = models.ForeignKey(User, related_name="blocking", on_delete=models.CASCADE)
+    blocked = models.ForeignKey(User, related_name="blocked", on_delete=models.CASCADE)
     blocked_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('blocker', 'blocked')
-        verbose_name = 'User Block'
-        verbose_name_plural = 'User Blocks'
+        unique_together = ("blocker", "blocked")
+        verbose_name = "User Block"
+        verbose_name_plural = "User Blocks"
 
     def __str__(self):
         return f"{self.blocker} blocked {self.blocked}"

@@ -1,4 +1,3 @@
-<!-- base.html -->
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
@@ -10,31 +9,53 @@
 </head>
 <body>
     <header>
-        <nav>
-            <ul>
-                {% if user.is_authenticated %}
-                    <li><a href="{% url 'myapp:dashboard' %}">Dashboard</a></li>
-                    <li><a href="{% url 'myapp:feed' %}">Home</a></li>
-                    <li><a href="{% url 'myapp:create_ticket' %}">Create Ticket</a></li>
-                    <li><a href="{% url 'myapp:create_ticket_review' %}">Create Ticket & Review</a></li>
-                    <li><a href="{% url 'myapp:manage_follows' %}">Manage Follows</a></li>
-                    <li><a href="{% url 'myapp:request_review' %}">Request a Review</a></li>
-                    <li><a href="{% url 'myapp:manage_blocks' %}">Manage Blocked Users</a></li>
-                    <li>
-                        <form method="post" action="{% url 'myapp:logout' %}" style="display: inline;">
-                            {% csrf_token %}
-                            <button type="submit">Logout</button>
-                        </form>
-                    </li>
-                {% else %}
-                    <li><a href="{% url 'myapp:login' %}">Login</a></li>
-                    <li><a href="{% url 'myapp:signup' %}">Signup</a></li>
-                {% endif %}
-            </ul>
-        </nav>
+        <div class="container">
+            <h1>LITRevu Website</h1>
+            <div id="menu-toggle" class="menu-icon">☰</div>
+            <nav id="nav-menu">
+                <ul>
+                    {% if user.is_authenticated %}
+                        <li><a href="{% url 'myapp:dashboard' %}">Account</a></li>
+                        <li><a href="{% url 'myapp:feed' %}">Feed</a></li>
+                        <li><a href="{% url 'myapp:create_ticket' %}">Ticket</a></li>
+                        <li><a href="{% url 'myapp:create_ticket_review' %}">Ticket & Review</a></li>
+                        <li><a href="{% url 'myapp:manage_follows' %}">Followers</a></li>
+                        <li>
+                            <form method="post" action="{% url 'myapp:logout' %}" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit">Logout</button>
+                            </form>
+                        </li>
+                    {% else %}
+                        <li><a href="{% url 'myapp:login' %}">Login</a></li>
+                        <li><a href="{% url 'myapp:signup' %}">Signup</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
     </header>
     <main>
-        {% block content %}{% endblock %}
+        <div class="container">
+            {% block content %}
+            {% endblock %}
+        </div>
     </main>
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 My App. All rights reserved.</p>
+        </div>
+    </footer>
+    <script>
+        function toggleMenu() {
+            var menu = document.querySelector('#nav-menu ul');
+            if (menu.classList.contains('show')) {
+                menu.classList.remove('show');
+            } else {
+                menu.classList.add('show');
+            }
+        }
+
+        document.getElementById('menu-toggle').addEventListener('click', toggleMenu);
+    </script>
 </body>
 </html>

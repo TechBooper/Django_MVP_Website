@@ -79,16 +79,31 @@ def feed(request):
         HttpResponse: Rendered feed page with combined tickets and reviews sorted by creation time.
     """
     following_users = [follow.followed_user for follow in request.user.following.all()]
-    blocked_users = [block.blocked for block in UserBlock.objects.filter(blocker=request.user)]
+    blocked_users = [
+        block.blocked for block in UserBlock.objects.filter(blocker=request.user)
+    ]
 
-    tickets = Ticket.objects.filter(user__in=following_users).exclude(user__in=blocked_users).annotate(content_type=Value('TICKET', CharField()))
-    reviews = Review.objects.filter(user__in=following_users).exclude(user__in=blocked_users).annotate(content_type=Value('REVIEW', CharField()))
+    tickets = (
+        Ticket.objects.filter(user__in=following_users)
+        .exclude(user__in=blocked_users)
+        .annotate(content_type=Value("TICKET", CharField()))
+    )
+    reviews = (
+        Review.objects.filter(user__in=following_users)
+        .exclude(user__in=blocked_users)
+        .annotate(content_type=Value("REVIEW", CharField()))
+    )
 
     combined = sorted(
         list(tickets) + list(reviews), key=lambda x: x.time_created, reverse=True
     )
 
-    return render(request, 'feed.html', context={'posts': combined, 'media_url': settings.MEDIA_URL})
+    return render(
+        request,
+        "feed.html",
+        context={"posts": combined, "media_url": settings.MEDIA_URL},
+    )
+
 
 def signup(request):
     """
@@ -126,7 +141,7 @@ def create_ticket(request):
         form = TicketForm(request.POST)
         if form.is_valid():
             ticket = form.save(commit=False)
-            ticket.user = request.user  
+            ticket.user = request.user
             ticket.save()
             messages.success(request, "Ticket created successfully.")
             return redirect("myapp:feed")
@@ -337,7 +352,7 @@ def delete_ticket(request, ticket_id):
         HttpResponse: Redirects to dashboard upon successful deletion, or rendered delete ticket page.
     """
     ticket = get_object_or_404(Ticket, id=ticket_id, user=request.user)
-    
+
     if request.method == "POST":
         ticket.delete()
         return redirect(reverse("myapp:dashboard"))
@@ -509,9 +524,10 @@ def confirm_delete_review(request, review_id):
     if request.method == "POST":
         review.delete()
         messages.success(request, "Review deleted successfully.")
-        return redirect('myapp:feed')
+        return redirect("myapp:feed")
 
     return render(request, "confirm_delete_review.html", {"review": review})
+
 
 def handle_delete(request, instance_id, model_class, success_message):
     """
@@ -536,6 +552,7 @@ def handle_delete(request, instance_id, model_class, success_message):
         return redirect("myapp:feed")
     return render(request, "base.html", {"instance": instance})
 
+
 @login_required
 def block_user(request, user_id):
     """
@@ -552,16 +569,19 @@ def block_user(request, user_id):
 
     if user_to_block == request.user:
         messages.error(request, "You cannot block yourself.")
-        return redirect('myapp:dashboard')
+        return redirect("myapp:dashboard")
 
-    block, created = UserBlock.objects.get_or_create(blocker=request.user, blocked=user_to_block)
+    block, created = UserBlock.objects.get_or_create(
+        blocker=request.user, blocked=user_to_block
+    )
 
     if created:
         messages.success(request, f"You have blocked {user_to_block.username}.")
     else:
         messages.info(request, f"{user_to_block.username} is already blocked.")
 
-    return redirect('myapp:dashboard')
+    return redirect("myapp:dashboard")
+
 
 @login_required
 def manage_blocks(request):
@@ -574,8 +594,10 @@ def manage_blocks(request):
     Returns:
         HttpResponse: Rendered manage blocks page with a list of blocked users and a block form.
     """
-    blocked_users = UserBlock.objects.filter(blocker=request.user).select_related('blocked')
-    
+    blocked_users = UserBlock.objects.filter(blocker=request.user).select_related(
+        "blocked"
+    )
+
     if request.method == "POST":
         if "block_user" in request.POST:
             username = request.POST.get("username")
@@ -584,23 +606,32 @@ def manage_blocks(request):
                 if user_to_block == request.user:
                     messages.error(request, "You cannot block yourself.")
                 else:
-                    UserBlock.objects.get_or_create(blocker=request.user, blocked=user_to_block)
-                    messages.success(request, f"You have blocked {user_to_block.username}.")
+                    UserBlock.objects.get_or_create(
+                        blocker=request.user, blocked=user_to_block
+                    )
+                    messages.success(
+                        request, f"You have blocked {user_to_block.username}."
+                    )
             except User.DoesNotExist:
                 messages.error(request, "User not found.")
-        
+
         elif "unblock_user" in request.POST:
             unblock_user_id = request.POST.get("unblock_user_id")
             try:
                 user_to_unblock = User.objects.get(pk=unblock_user_id)
-                UserBlock.objects.filter(blocker=request.user, blocked=user_to_unblock).delete()
-                messages.success(request, f"You have unblocked {user_to_unblock.username}.")
+                UserBlock.objects.filter(
+                    blocker=request.user, blocked=user_to_unblock
+                ).delete()
+                messages.success(
+                    request, f"You have unblocked {user_to_unblock.username}."
+                )
             except User.DoesNotExist:
                 messages.error(request, "User not found.")
-        
-        return redirect('myapp:manage_blocks')
+
+        return redirect("myapp:manage_blocks")
 
     return render(request, "manage_blocks.html", {"blocked_users": blocked_users})
+
 
 def is_blocked(blocker, blocked):
     """
@@ -614,6 +645,7 @@ def is_blocked(blocker, blocked):
         bool: True if blocked, False otherwise.
     """
     return UserBlock.objects.filter(blocker=blocker, blocked=blocked).exists()
+
 
 @login_required
 @require_POST

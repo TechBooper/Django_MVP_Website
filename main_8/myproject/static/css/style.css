@@ -1,114 +1,132 @@
+/* Global Styles */
 body {
     font-family: Arial, sans-serif;
     background-color: #f4f4f4;
     margin: 0;
     padding: 0;
     color: #333;
+    line-height: 1.6;
+    box-sizing: border-box;
 }
 
+*,
+*::before,
+*::after {
+    box-sizing: inherit;
+}
+
+/* Header and Navigation */
 header {
     background-color: #4CAF50;
+    padding: 15px;
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+header h1 {
+    font-size: 1.8em;
+    margin: 0;
     color: white;
-    padding: 10px 0;
-    text-align: center;
+}
+
+#menu-toggle {
+    display: none;
+    font-size: 1.5em;
+    cursor: pointer;
+    color: white;
+}
+
+.menu-icon {
+    display: none;
 }
 
 nav ul {
-    list-style-type: none;
+    list-style: none;
     padding: 0;
     margin: 0;
     display: flex;
-    justify-content: center;
+    align-items: center;
 }
 
 nav ul li {
-    margin-right: 20px;
+    margin: 0 10px;
 }
 
 nav ul li a, nav ul li button {
     color: white;
     text-decoration: none;
+    padding: 10px;
+    border-radius: 5px;
     background: none;
     border: none;
-    padding: 0;
-    font: inherit;
+    font-size: inherit;
     cursor: pointer;
 }
 
-nav ul li button {
-    background: none; /* Ensure no background */
-    border: none; /* Ensure no border */
-    color: white; /* Text color same as other links */
-    padding: 0; /* Remove padding */
-    margin: 0; /* Remove margin */
-    font: inherit; /* Inherit font styles */
-    cursor: pointer; /* Pointer cursor */
+nav ul li:last-child {
+    margin-right: 0;
 }
 
 nav ul li form button {
-    background-color: #4CAF50; /* Ensure the button background is green */
-    border: 1px solid #4CAF50; /* Border to match background */
-    border-radius: 5px; /* Add border radius for rounded corners */
-    padding: 10px; /* Add padding for better appearance */
-    color: white; /* Ensure text color is white */
-    cursor: pointer; /* Pointer cursor */
+    background-color: #4CAF50;
+    border: 1px solid #4CAF50;
+    border-radius: 5px;
+    color: white;
+    cursor: pointer;
     transition: background-color 0.3s;
 }
 
-nav ul li form button:hover {
-    background-color: #45a049; /* Change background color on hover */
-    border-color: #45a049; /* Change border color on hover */
+nav ul li form button:hover, nav ul li a:hover {
+    background-color: #45a049;
 }
 
-nav ul li button:hover, nav ul li a:hover {
-    text-decoration: underline;
-}
-
+/* Main Content */
 main {
-    padding: 20px;
     max-width: 800px;
     margin: 20px auto;
+    padding: 20px;
+    font-size: 1.1em;
+    line-height: 1.8;
 }
 
-form {
+h1, h2 {
+    color: #333;
+    margin-bottom: 20px;
+}
+
+/* Card and Form Styles */
+.card, form {
     background-color: white;
     padding: 20px;
-    border-radius: 5px;
+    border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     margin-bottom: 20px;
 }
 
-fieldset {
-    border: none;
+.card img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 5px;
 }
 
-legend {
-    font-size: 1.5em;
-    margin-bottom: 10px;
+.card h3, .form-group label {
+    margin-top: 0;
 }
 
 .form-group {
-    margin-bottom: 15px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 5px;
+    margin-bottom: 20px;
 }
 
 form input, form textarea, form button, form select {
-    display: block;
     width: 100%;
-    margin-bottom: 10px;
-    padding: 10px;
+    padding: 15px;
+    margin: 10px 0;
     border: 1px solid #ccc;
     border-radius: 5px;
-    box-sizing: border-box;
-}
-
-form input:focus, form textarea:focus, form button:focus {
-    outline: none;
-    border-color: #4CAF50;
+    font-size: 1em;
 }
 
 form button {
@@ -123,98 +141,68 @@ form button:hover {
     background-color: #45a049;
 }
 
-h1, h2 {
-    color: #333;
-}
-
-.ticket-details {
-    background-color: white;
-    padding: 20px;
-    border-radius: 5px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
-}
-
-.ticket {
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    margin-bottom: 20px;
-}
-
-.ticket img {
-    max-width: 100%;
-    height: auto;
-    border-radius: 5px;
-    margin-top: 10px;
-}
-
-ul {
-    background-color: #4CAF50;
-    padding: 20px;
-    border-radius: 5px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-ul li {
-    margin-bottom: 10px;
-    color: #333;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-ul li form {
-    display: inline;
-}
-
-.card {
-    background-color: white;
-    padding: 20px;
-    margin-bottom: 20px;
-    border-radius: 5px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-.card img {
-    max-width: 100%;
-    height: auto;
-    border-radius: 5px;
-}
-
-.card h3 {
-    margin-top: 0;
-}
-
-.button-group {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 20px;
-}
-
-.button-group button {
-    flex: 1;
-    margin: 0 5px;
-    padding: 10px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-.button-group button:hover {
-    background-color: #45a049;
-}
-
+/* Footer */
 footer {
     background-color: #4CAF50;
     color: white;
     text-align: center;
-    padding: 10px 0;
-    position: fixed;
-    bottom: 0;
+    padding: 20px 10px;
     width: 100%;
+    position: static;
 }
 
+/* Responsive Styles */
+@media (max-width: 768px) {
+    header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    #menu-toggle {
+        display: block;
+    }
+
+    nav ul {
+        display: none;
+        flex-direction: column;
+        width: 100%;
+        background-color: #4CAF50;
+        text-align: left;
+    }
+
+    nav ul.show {
+        display: block;
+    }
+
+    nav ul li {
+        margin: 10px 0;
+        width: 100%;
+    }
+
+    nav ul li a, nav ul li button {
+        display: block;
+        text-align: left;
+        padding: 15px 20px;
+        width: 100%;
+    }
+
+    nav ul li form button {
+        margin: 10px 0;
+        text-align: left;
+    }
+
+    main {
+        padding: 15px;
+        margin: 10px;
+        max-width: 100%;
+    }
+
+    .card {
+        margin-bottom: 15px;
+    }
+
+    footer {
+        margin-top: 20px;
+        padding: 15px;
+    }
+}
